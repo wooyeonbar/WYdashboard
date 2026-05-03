@@ -165,7 +165,8 @@
   //  상대계좌번호(5) 상대은행(6) 메모(7) 거래구분(8)
   //  수표어음금액(9) CMS코드(10) 상대계좌예금주명(11)
   // =============================================================
-  const C = {
+  // 기본값 — parseCSV 내부에서 헤더 기반으로 자동 업데이트됨
+  let C = {
     DT   : 0,  // 거래일시
     OUT  : 1,  // 출금
     IN   : 2,  // 입금
@@ -215,22 +216,51 @@
   // =============================================================
   function parseAmount(s) {
     if (!s) return 0;
-    const n = parseFloat(s.replace(/[,\s]/g, ''));
+    const n = parseFloat(String(s).replace(/[,\s원]/g, ''));
     return isNaN(n) ? 0 : n;
   }
 
   function parseDT(s) {
     if (!s) return null;
-    s = s.trim();
+    s = String(s).trim();
+    let m;
+
+    // "2024. 1. 15. 오전 2:30:00" or "오후" (Google Sheets 한국어 날짜)
+    m = s.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\s*(오전|오후)?\s*(\d{1,2}):(\d{2})/);
+    if (m) {
+      let h = parseInt(m[5]);
+      if (m[4] === '오후' && h !== 12) h += 12;
+      if (m[4] === '오전' && h === 12) h = 0;
+      return new Date(+m[1], +m[2]-1, +m[3], h, +m[6]);
+    }
+    // "2024. 1. 15." or "2024. 1. 15"
+    m = s.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+    if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+
     // "2024.01.15 14:30:25" or "2024-01-15 14:30"
-    let m = s.match(/(\d{4})[.\-\/](\d{2})[.\-\/](\d{2})[\s T](\d{2}):(\d{2})/);
+    m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})[\sT](\d{2}):(\d{2})/);
     if (m) return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5]);
-    // "20240115143025"
+
+    // "2024.01.15" or "2024-01-15"
+    m = s.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})$/);
+    if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+
+    // "20240115143025" (14자리)
     m = s.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
     if (m) return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5]);
-    // fallback
-    const d = new Date(s);
-    return isNaN(d) ? null : d;
+
+    // "20240115" (8자리)
+    m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+
+    // Excel 시리얼 날짜 (40000~60000 범위 = 2009~2064년)
+    const serial = parseFloat(s.replace(/,/g, ''));
+    if (!isNaN(serial) && serial > 40000 && serial < 60000) {
+      // Excel epoch: 1899-12-30
+      return new Date(Math.round((serial - 25569) * 86400 * 1000));
+    }
+
+    return null; // 파싱 불가 → null 반환 (잘못된 날짜 방지)
   }
 
   function monthKey(dt) {
@@ -244,21 +274,61 @@
 
   function fmtWonShort(n) {
     if (n >= 1e8) return (n/1e8).toFixed(1) + '억';
-    if (n >= 1e4) return (n/1e4).toFixed(0) + '만';
+    if (n >= 1e4) return Math.round(n/1e4) + '만';
     return n.toLocaleString('ko-KR');
   }
 
   // =============================================================
-  //  CSV 파서 (따옴표 처리 포함)
+  //  CSV 파서 — 헤더 자동감지 + 컬럼 동적 매핑
   // =============================================================
   function parseCSV(text) {
-    const rows = [];
     const lines = text.replace(/\r/g, '').split('\n');
-    for (let i = 1; i < lines.length; i++) {      // 헤더 행 제외
+
+    // 1) 헤더 행 자동탐색 (최대 30행 스캔)
+    let headerIdx = 0;
+    const COL_KEYWORDS = ['거래일시','출금','입금','거래내용'];
+    for (let i = 0; i < Math.min(30, lines.length); i++) {
+      const line = lines[i];
+      if (!line.trim()) continue;
+      const matchCount = COL_KEYWORDS.filter(kw => line.includes(kw)).length;
+      if (matchCount >= 2) { headerIdx = i; break; }
+    }
+
+    // 2) 헤더에서 컬럼 인덱스 동적 매핑
+    const headerCols = splitCSVLine(lines[headerIdx]);
+    const NAME_TO_KEY = {
+      '거래일시':'DT', '거래 일시':'DT',
+      '출금':'OUT', '출금금액':'OUT', '출금액':'OUT',
+      '입금':'IN',  '입금금액':'IN',  '입금액':'IN',
+      '거래후잔액':'BAL','거래후 잔액':'BAL','잔액':'BAL',
+      '거래내용':'DESC','내용':'DESC','적요':'DESC',
+      '상대계좌번호':'ACNO',
+      '상대은행':'BANK',
+      '메모':'MEMO',
+      '거래구분':'TYPE',
+      '수표어음금액':'CHK',
+      'CMS코드':'CMS','cms코드':'CMS',
+      '상대계좌예금주명':'NAME','예금주':'NAME',
+    };
+    headerCols.forEach((col, idx) => {
+      const cleaned = col.trim().replace(/\s+/g,' ');
+      const key = NAME_TO_KEY[cleaned];
+      if (key && key in C) C[key] = idx;
+    });
+
+    // 3) 데이터 행 파싱
+    const rows = [];
+    for (let i = headerIdx + 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      rows.push(splitCSVLine(line));
+      const cols = splitCSVLine(line);
+      // 컬럼 수가 너무 적은 합계행·빈 행 제외
+      if (cols.length < Math.max(3, headerCols.length - 4)) continue;
+      rows.push(cols);
     }
+
+    console.log(`[대시보드] 헤더행: ${headerIdx}번째, 컬럼매핑:`, {...C});
+    console.log(`[대시보드] 총 ${rows.length}건 로드, 샘플:`, rows[0]);
     return rows;
   }
 
