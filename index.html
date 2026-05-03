@@ -185,8 +185,8 @@
   //  분류 패턴
   // =============================================================
   const RE = {
-    // 매출 — 카드사 (카드사명+숫자 or 숫자+BC 패턴 포함)
-    CARD_ANY  : /BC|우리카드|우리[0-9]|현대카드|현대[0-9]|SHC|신한카드|신한[0-9]|롯데카드|롯데[0-9]|하나카드|하나[0-9]|삼성카드|삼성[0-9]|KB카드|국민카드|KB[0-9]|농협카드|농협[0-9]|우체국카드/i,
+    // 매출 — 카드사: [카드사명][숫자] 또는 [숫자][카드사명] 양방향 패턴
+    CARD_ANY  : /BC카드|BC[0-9]|[0-9]BC|우리카드|우리[0-9]|[0-9]우리|현대카드|현대[0-9]|[0-9]현대|SHC|신한카드|신한[0-9]|[0-9]신한|롯데카드|롯데[0-9]|[0-9]롯데|하나카드|하나[0-9]|[0-9]하나|삼성카드|삼성[0-9]|[0-9]삼성|KB카드|국민카드|KB[0-9]|[0-9]KB|농협카드|농협[0-9]|[0-9]농협|우체국카드|\bBC\b/i,
 
     // 매출 — 플랫폼
     PLATFORM  : /Npay|네이버페이|네이버\s*파이낸셜|토스|Toss|카카오페이/i,
@@ -209,27 +209,27 @@
     // 지출 — 교통비
     TRANS     : /택시|카카오T|카카오택시|우버|Uber/i,
 
-    // 지출 — 통신비
-    TELECOM   : /통신요금|통신비|SKT|LGU\+|LG유플|이동통신/,
+    // 지출 — 통신비 (KT, SKYLIFE 포함)
+    TELECOM   : /통신요금|통신비|SKT|KT통신|KT요금|SKYLIFE|스카이라이프|LGU\+|LG유플|이동통신/i,
 
     // 지출 — 식비/회식비 (음식점 이름 키워드)
-    FOOD      : /버거킹|맥도날드|롯데리아|KFC|파파이스|서브웨이|피자헛|도미노피자|피자|치킨|삼겹살|냉면|칼국수|김밥|분식|카페|커피|스타벅스|투썸|이디야|파리바게|뚜레쥬르|할리스|탐앤탐|메가커피|마라탕|떡볶이|순대|포차|주점|술집|식당|음식점|횟집|초밥|스시|라멘|우동|곱창|닭갈비|삼계탕|돈까스|쌀국수|한식당|중식당|일식당|양식당|뷔페|우아한형제들|배달의민족|배민/,
+    FOOD      : /버거킹|맥도날드|롯데리아|KFC|파파이스|서브웨이|피자헛|도미노피자|피자|치킨|삼겹살|냉면|칼국수|김밥|분식|카페|커피|스타벅스|투썸|이디야|파리바게|뚜레쥬르|할리스|탐앤탐|메가커피|마라탕|떡볶이|순대|포차|주점|술집|식당|음식점|횟집|초밥|스시|라멘|우동|곱창|닭갈비|삼계탕|돈까스|쌀국수|한식당|중식당|일식당|양식당|뷔페|우아한형제들|배달의민족|배민|바오|만두|국밥|설렁탕|해장국|갈비|샤브|샐러드|브런치|베이커리|빵|파스타|스테이크|부대찌개|보쌈|족발|막창|곱도리탕|닭볶음|오겹살|쭈꾸미|낙지|회식|고기집|소고기|돼지고기|참치|연어|랍스터/,
 
     // 예외 — 가승인·취소
     CANCEL    : /가승인|취소/,
   };
 
-  // 카드사 식별 함수
+  // 카드사 식별 함수 — [숫자][카드사명] 및 [카드사명][숫자] 양방향 처리
   function identifyCardCompany(desc) {
-    if (/[0-9]BC\b|\bBC[0-9]|\bBC\b/i.test(desc)) return 'BC카드';
-    if (/우리카드|우리[0-9]/i.test(desc)) return '우리카드';
-    if (/현대카드|현대[0-9]/i.test(desc)) return '현대카드';
-    if (/SHC|신한카드|신한[0-9]/i.test(desc)) return '신한카드';
-    if (/롯데카드|롯데[0-9]/i.test(desc)) return '롯데카드';
-    if (/하나카드|하나[0-9]/i.test(desc)) return '하나카드';
-    if (/삼성카드|삼성[0-9]/i.test(desc)) return '삼성카드';
-    if (/KB카드|국민카드|KB[0-9]/i.test(desc)) return 'KB카드';
-    if (/농협카드|농협[0-9]/i.test(desc)) return '농협카드';
+    if (/BC카드|BC[0-9]|[0-9]BC|\bBC\b/i.test(desc)) return 'BC카드';
+    if (/우리카드|우리[0-9]|[0-9]우리/i.test(desc)) return '우리카드';
+    if (/현대카드|현대[0-9]|[0-9]현대/i.test(desc)) return '현대카드';
+    if (/SHC|신한카드|신한[0-9]|[0-9]신한/i.test(desc)) return '신한카드';
+    if (/롯데카드|롯데[0-9]|[0-9]롯데/i.test(desc)) return '롯데카드';
+    if (/하나카드|하나[0-9]|[0-9]하나/i.test(desc)) return '하나카드';
+    if (/삼성카드|삼성[0-9]|[0-9]삼성/i.test(desc)) return '삼성카드';
+    if (/KB카드|국민카드|KB[0-9]|[0-9]KB/i.test(desc)) return 'KB카드';
+    if (/농협카드|농협[0-9]|[0-9]농협/i.test(desc)) return '농협카드';
     if (/우체국카드/i.test(desc)) return '우체국카드';
     return '기타카드';
   }
@@ -436,8 +436,10 @@
         return { cat: 'expense', label, amount: outAmt };
       }
       // 식비 fallback — 수(3)목(4)금(5)토(6), 오후 5~7시, 10만원 미만
+      // 시간 정보가 없는 경우(자정=00:00으로 파싱)는 시간 조건 면제
       const isFoodDay  = dow >= 3 && dow <= 6;
-      const isFoodTime = hour >= 17 && hour < 19;
+      const hasTimeInfo = dt && (dt.getHours() !== 0 || dt.getMinutes() !== 0);
+      const isFoodTime = !hasTimeInfo || (hour >= 17 && hour < 19);
       if (isFoodDay && isFoodTime && outAmt < 100000) {
         return { cat: 'expense', label: '식비', amount: outAmt };
       }
@@ -694,22 +696,4 @@
   }
 
   // =============================================================
-  //  지출 파이 차트
-  // =============================================================
-  function renderPieChart(outByLabel) {
-    const ctx = document.getElementById('pie-chart').getContext('2d');
-    if (chartPie) chartPie.destroy();
-
-    const labels = Object.keys(outByLabel);
-    const values = Object.values(outByLabel);
-    const COLORS  = ['#3B82F6','#EF4444','#10B981','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316'];
-
-    if (labels.length === 0) {
-      // 데이터 없으면 빈 메시지
-      chartPie = new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: ['데이터 없음'], datasets: [{ data: [1], backgroundColor: ['#E5E7EB'] }] },
-        options: { responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } } },
-      });
-      retu
+  //  지출 �
