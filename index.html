@@ -188,8 +188,8 @@
     // 매출 — 카드사: [카드사명][숫자] 또는 [숫자][카드사명] 양방향 패턴
     CARD_ANY  : /BC카드|BC[0-9]|[0-9]BC|\bBC\b|우리카드|우리[0-9]|[0-9]우리|우[0-9]|현대카드|현대[0-9]|[0-9]현대|현[0-9]|SHC|신한카드|신한[0-9]|[0-9]신한|신[0-9]|롯데카드|롯데[0-9]|[0-9]롯데|롯[0-9]|하나카드|하나[0-9]|[0-9]하나|하[0-9]|삼성카드|삼성[0-9]|[0-9]삼성|삼[0-9]|KB카드|국민카드|KB[0-9]|[0-9]KB|NH카드|NH[0-9]|[0-9]NH|농협카드|농협[0-9]|[0-9]농협|우체국카드/i,
 
-    // 매출 — 플랫폼
-    PLATFORM  : /Npay|네이버페이|네이버\s*파이낸셜|토스|Toss|카카오페이/i,
+    // 매출 — 플랫폼 (네이버파이낸셜은 NAVER_FIN으로 별도 처리)
+    PLATFORM  : /Npay|네이버페이|토스|Toss|카카오페이/i,
 
     // 매출 — 이체매출 (2~4글자 순수 한글 이름 = 현금매출)
     KR_NAME   : /^[가-힣]{2,4}$/,
@@ -203,8 +203,8 @@
     // 지출 — 세금
     TAX       : /국세|지방세|부가세|소득세|법인세|종합소득세|원천세|세금|세무서/,
 
-    // 지출 — 운영비
-    OPS       : /쿠팡|오늘의집|GS25|CU편의점|CU마트|회계법인|중앙피앤씨/,
+    // 지출 — 운영비 (회계, 피앤씨 등 사무관련)
+    OPS       : /회계법인|중앙피앤씨/,
 
     // 지출 — 교통비
     TRANS     : /택시|카카오T|카카오택시|우버|Uber/i,
@@ -212,8 +212,32 @@
     // 지출 — 통신비 (KT, SKYLIFE 포함)
     TELECOM   : /통신요금|통신비|SKT|KT통신|KT요금|SKYLIFE|스카이라이프|LGU\+|LG유플|이동통신/i,
 
-    // 지출 — 식비/회식비 (음식점 이름 키워드)
-    FOOD      : /버거킹|맥도날드|롯데리아|KFC|파파이스|서브웨이|피자헛|도미노피자|피자|치킨|삼겹살|냉면|칼국수|김밥|분식|카페|커피|스타벅스|투썸|이디야|파리바게|뚜레쥬르|할리스|탐앤탐|메가커피|마라탕|떡볶이|순대|포차|주점|술집|식당|음식점|횟집|초밥|스시|라멘|우동|곱창|닭갈비|삼계탕|돈까스|쌀국수|한식당|중식당|일식당|양식당|뷔페|우아한형제들|배달의민족|배민|바오|만두|국밥|설렁탕|해장국|갈비|샤브|샐러드|브런치|베이커리|빵|파스타|스테이크|부대찌개|보쌈|족발|막창|곱도리탕|닭볶음|오겹살|쭈꾸미|낙지|회식|고기집|소고기|돼지고기|참치|연어|랍스터/,
+    // 지출 — 커피/카페 (식비와 별도 분류)
+    COFFEE    : /바나프레소|스타빈|메가커피|스타벅스|투썸|이디야|파리바게|뚜레쥬르|할리스|탐앤탐|탐탐|카페베네|엔제리너스|커피빈|폴바셋|공차|파스쿠찌|더벤티|빽다방|컴포즈|카페/,
+
+    // 지출 — 식비/회식비 (음식점 이름 키워드, 커피류 제외)
+    FOOD      : /버거킹|맥도날드|롯데리아|KFC|파파이스|서브웨이|피자헛|도미노피자|피자|치킨|삼겹살|냉면|칼국수|김밥|분식|마라탕|떡볶이|순대|포차|주점|술집|식당|음식점|횟집|초밥|스시|라멘|우동|곱창|닭갈비|삼계탕|돈까스|쌀국수|한식당|중식당|일식당|양식당|뷔페|우아한형제들|배달의민족|배민|바오|만두|국밥|설렁탕|해장국|갈비|샤브|샐러드|브런치|베이커리|빵|파스타|스테이크|부대찌개|보쌈|족발|막창|곱도리탕|닭볶음|오겹살|쭈꾸미|낙지|회식|고기집|소고기|돼지고기|참치|연어|랍스터|보리밥|니즈버거|닭한마리/,
+
+    // 지출 — 주류비
+    ALCOHOL   : /서린주류/,
+
+    // 지출 — 물품구입 (편의점, 생활용품, 온라인쇼핑)
+    GOODS     : /다이소|버킷플레이스|킨코스코리아|씨유|CU편의점|CU마트|\bCU\b|GS25|GS편의점|GS수퍼|GS슈퍼|GS마트|세븐일레븐|이마트24|미니스톱|쿠팡|오늘의집/,
+
+    // 지출 — 보험료
+    INSURANCE : /보험료|보험/,
+
+    // 지출 — 얼음 (최창수, 씨에스유통)
+    ICE       : /최창수|씨에스유통/,
+
+    // 지출 — 기타비용 (개인 이름 출금)
+    PERSONAL  : /송호경|이은민|고한규|김영수/,
+
+    // 수입 — 잡수익 (결산류)
+    ANNUAL    : /결산/,
+
+    // 네이버파이낸셜 (출금→물품구입, 입금→잡수익)
+    NAVER_FIN : /네이버파이낸셜/i,
 
     // 예외 — 가승인·취소
     CANCEL    : /가승인|취소/,
@@ -379,15 +403,28 @@
     const dt     = parseDT(row[C.DT]);
     const hour   = dt ? dt.getHours() : -1;
     const dow    = dt ? dt.getDay() : -1; // 0=일 1=월 2=화 3=수 4=목 5=금 6=토
+    const mon    = dt ? dt.getMonth() : -1; // 0=1월 ... 10=11월
     const both   = desc + ' ' + name;
 
-    // ── 예외: 가승인·취소 (입출금 양쪽 모두 체크) ────────────
+    // ── 예외: 가승인·취소 ────────────────────────────────────────
     if (RE.CANCEL.test(desc) || RE.CANCEL.test(name)) {
       return { cat: 'excluded', label: '가승인·취소 제외' };
     }
 
-    // ── 입금 ──────────────────────────────────────────────────
+    // ── 입금 ───────────────────────────────────────────────────
     if (inAmt > 0 && outAmt === 0) {
+      // 자본금 — 이은민 69,259,222원은 매출이 아닌 자본금
+      if (inAmt === 69259222 && RE.PERSONAL.test(both)) {
+        return { cat: 'excluded', label: '자본금 제외' };
+      }
+      // 결산 → 잡수익
+      if (RE.ANNUAL.test(both)) {
+        return { cat: 'income', label: '잡수익', amount: inAmt };
+      }
+      // 쿠팡/편의점 입금 → 환불
+      if (RE.GOODS.test(desc) || RE.GOODS.test(name)) {
+        return { cat: 'income', label: '환불', amount: inAmt };
+      }
       // 카드매출 (카드사명+숫자, 숫자+카드사명 패턴 포함)
       if (RE.CARD_ANY.test(desc)) {
         const cardCo = identifyCardCompany(desc);
@@ -397,15 +434,43 @@
       if (RE.PLATFORM.test(desc) || RE.PLATFORM.test(name)) {
         return { cat: 'income', label: '플랫폼매출', amount: inAmt };
       }
+      // 네이버파이낸셜 입금 → 잡수익
+      if (RE.NAVER_FIN.test(desc) || RE.NAVER_FIN.test(name)) {
+        return { cat: 'income', label: '잡수익', amount: inAmt };
+      }
       // 이체매출 — 2~4글자 순수 한글 이름 = 현금매출
       if (RE.KR_NAME.test(desc) || RE.KR_NAME.test(name)) {
         return { cat: 'income', label: '이체매출(현금)', amount: inAmt };
       }
+      // 11월 미분류 입금 → 잡수익
+      if (mon === 10) {
+        return { cat: 'income', label: '잡수익', amount: inAmt };
+      }
       return { cat: 'unclassified', amount: inAmt, dir: 'in' };
     }
 
-    // ── 출금 ──────────────────────────────────────────────────
+    // ── 출금 ───────────────────────────────────────────────────
     if (outAmt > 0 && inAmt === 0) {
+      // 얼음 (최창수, 씨에스유통)
+      if (RE.ICE.test(both)) {
+        return { cat: 'expense', label: '얼음', amount: outAmt };
+      }
+      // 기타비용 (개인 이름 출금: 송호경/이은민/고한규/김영수)
+      if (RE.PERSONAL.test(both)) {
+        return { cat: 'expense', label: '기타비용', amount: outAmt };
+      }
+      // 주류비
+      if (RE.ALCOHOL.test(both)) {
+        return { cat: 'expense', label: '주류비', amount: outAmt };
+      }
+      // 물품구입 (다이소/버킷플레이스/킨코스/편의점류/네이버파이낸셜)
+      if (RE.GOODS.test(both) || RE.NAVER_FIN.test(both)) {
+        return { cat: 'expense', label: '물품구입', amount: outAmt };
+      }
+      // 보험료
+      if (RE.INSURANCE.test(both)) {
+        return { cat: 'expense', label: '보험료', amount: outAmt };
+      }
       // 고정비 (이진호 = 임대료/관리비/전기세 포함)
       if (RE.FIXED.test(both)) {
         return { cat: 'expense', label: '고정비', amount: outAmt };
@@ -430,6 +495,10 @@
       if (RE.TELECOM.test(both)) {
         return { cat: 'expense', label: '통신비', amount: outAmt };
       }
+      // 커피 (카페/커피전문점 — 식비보다 먼저 체크)
+      if (RE.COFFEE.test(both)) {
+        return { cat: 'expense', label: '커피', amount: outAmt };
+      }
       // 식비 / 회식비 — 음식점 이름 키워드
       if (RE.FOOD.test(both)) {
         const label = (hour >= 22 || hour < 8) ? '회식비' : '식비';
@@ -442,6 +511,10 @@
       const isFoodTime = !hasTimeInfo || (hour >= 17 && hour < 19);
       if (isFoodDay && isFoodTime && outAmt < 100000) {
         return { cat: 'expense', label: '식비', amount: outAmt };
+      }
+      // 11월 미분류 지출 → 개업준비
+      if (mon === 10) {
+        return { cat: 'expense', label: '개업준비', amount: outAmt };
       }
       return { cat: 'unclassified', amount: outAmt, dir: 'out' };
     }
